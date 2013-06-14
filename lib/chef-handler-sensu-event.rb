@@ -26,40 +26,44 @@ require 'chef/handler'
 require 'json'
 require 'socket'
 
-class SensuEvent < Chef::Handler
-  attr_reader :server, :port, :severity, :handlers
+class Chef
+  class Handler
+    class SensuEvent < Chef::Handler
+      attr_reader :server, :port, :severity, :handlers
 
-  def opts
-    return {
-      :server = "127.0.0.1",
-      :port = 3030,
-      :severity = 1,
-      :handlers = ["default"]
-    }
-  end
+      def opts
+        return {
+          :server = "127.0.0.1",
+          :port = 3030,
+          :severity = 1,
+          :handlers = ["default"]
+        }
+      end
 
-  def initialize(options = opts)
-    @server = options[:server]
-    @port = options[:port]
-    @severity = options[:severity]
-    @handlers = options[:handlers]
-  end
+      def initialize(options = opts)
+        @server = options[:server]
+        @port = options[:port]
+        @severity = options[:severity]
+        @handlers = options[:handlers]
+      end
 
-  def create_json
-    stringify = run_status.success? ? "ran successfully" : "failed to run"
-    severity = run_status.success? ? 0 : @severity
-    sensu_payload = {
-      'handlers' => @handlers,
-      'name' => 'chef-run-result',
-      'output' => "Chef #{stringify} on #{node.name}",
-      'status' => severity }
-    return JSON.generate(sensu_payload)
-  end
+      def create_json
+        stringify = run_status.success? ? "ran successfully" : "failed to run"
+        severity = run_status.success? ? 0 : @severity
+        sensu_payload = {
+          'handlers' => @handlers,
+          'name' => 'chef-run-result',
+          'output' => "Chef #{stringify} on #{node.name}",
+          'status' => severity }
+        return JSON.generate(sensu_payload)
+      end
 
-  def report
-    sock = TCPSocket.new(@server, @port)
-    sock.write(create_json)
-    sock.close
+      def report
+        sock = TCPSocket.new(@server, @port)
+        sock.write(create_json)
+        sock.close
+      end
+    end
   end
 end
 
