@@ -48,12 +48,12 @@ class SensuEvent < Chef::Handler
   def create_json
     stringify = run_status.success? ? "ran successfully" : "failed to run"
     severity = run_status.success? ? 0 : @severity
-    hash = {
+    sensu_payload = {
       'handlers' => @handlers,
       'name' => 'chef-run-result',
       'output' => "Chef #{stringify} on #{node.name}",
       'status' => severity }
-    return JSON.generate(hash)
+    return JSON.generate(sensu_payload)
   end
 
   def report
