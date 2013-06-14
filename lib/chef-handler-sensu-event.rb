@@ -24,7 +24,7 @@ require 'rubygems'
 require 'chef'
 require 'chef/handler'
 require 'json'
-require 'net/http'
+require 'socket'
 
 class SensuEvent < Chef::Handler
   attr_reader :server, :port, :severity, :handlers
@@ -46,17 +46,20 @@ class SensuEvent < Chef::Handler
   end
 
   def create_json
-    return JSON.parse("{
-      \"handlers\": #{@handlers},
-      \"name\": \"chef-run-failure\",
-      \"output\": \"Chef failed to run on #{node.name}\", 
-      \"status\": \"#{severity}\" }")
+    stringify = run_status.success? ? "ran successfully" : "failed to run"
+    severity = run_status.success? ? 0 : @severity
+    hash = {
+      'handlers' => @handlers,
+      'name' => 'chef-run-result',
+      'output' => "Chef #{stringify} on #{node.name}",
+      'status' => severity }
+    return JSON.generate(hash)
   end
 
   def report
-    severity = run_status.success? ? 0 : @severity
-    json = create_json
-    http = Net::HTTP.new(@server, @port)
+    sock = TCPSocket.new(@server, @port)
+    sock.write(create_json)
+    sock.close
   end
 end
 
