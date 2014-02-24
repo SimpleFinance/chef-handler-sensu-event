@@ -29,22 +29,29 @@ require 'socket'
 class Chef
   class Handler
     class SensuEvent < Chef::Handler
-      attr_reader :server, :port, :severity, :handlers
 
-      def opts
-        return {
-          :server = "127.0.0.1",
-          :port = 3030,
-          :severity = 1,
-          :handlers = ["default"]
-        }
-      end
-
-      def initialize(options = opts)
+      def initialize(options = defaults)
         @server = options[:server]
         @port = options[:port]
         @severity = options[:severity]
         @handlers = options[:handlers]
+      end
+
+      def report
+        sock = TCPSocket.new(@server, @port)
+        sock.write(create_json)
+        sock.close
+      end
+
+      private
+
+      def defaults
+        return {
+          server: "127.0.0.1",
+          port: 3030,
+          severity: 1,
+          handlers: ["default"]
+        }
       end
 
       def create_json
@@ -57,13 +64,6 @@ class Chef
           'status' => severity }
         return JSON.generate(sensu_payload)
       end
-
-      def report
-        sock = TCPSocket.new(@server, @port)
-        sock.write(create_json)
-        sock.close
-      end
     end
   end
 end
-
