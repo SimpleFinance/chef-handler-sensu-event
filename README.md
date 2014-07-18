@@ -33,8 +33,7 @@ chef_handler 'SensuEvent' do
 end
 ```
 
-[1] http://docs.opscode.com/essentials_handlers_install.html
-
+[1] http://docs.opscode.com/resource_chef_handler.html
 ## License
 Apache License, Version 2.0
 
