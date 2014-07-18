@@ -26,7 +26,7 @@ chef_gem 'chef-handler-sensu-event' do
   action :install
 end
 
-chef_handler 'SensuEvent' do
+chef_handler 'Chef::Handler::SensuEvent' do
   source ::File.join(Gem.all_load_paths.grep(/chef-handler-sensu-event/).first,
                      'chef-handler-sensu-event.rb')
   action :enable
